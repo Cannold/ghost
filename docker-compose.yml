@@ -1,0 +1,24 @@
+version: '3.1'
+
+services:
+
+  ghost:
+    image: ghost:latest
+    restart: always
+    environment:
+      database__client: mysql
+      database__connection__host: db
+      database__connection__user: root
+      database__connection__password: awesomepassword
+      database__connection__database: ghost
+    ports:
+      - 8080:2368
+    volumes:
+      - ./src/content:/var/lib/ghost/content
+      - ./src/config.development.json:/var/lib/ghost/config.development.json
+      - ./src/config.production.json:/var/lib/ghost/config.production.json
+  db:
+    image: mysql:5.7
+    restart: always
+    environment:
+        MYSQL_ROOT_PASSWORD: awesomepassword
