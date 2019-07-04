@@ -3,6 +3,10 @@ FROM docker.sdlocal.net/devel/stratperlbase
 
 WORKDIR /app
 
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    libmysqlclient-dev
+
 COPY modules.txt /app/
 RUN install-cpan-modules /app/modules.txt
 

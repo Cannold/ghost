@@ -5,8 +5,16 @@ shift
 
 case $CMD in
     run)
-        docker-compose up -d
+        docker-compose up --build -d
         docker-compose logs -f
+        ;;
+
+    setup)
+        docker-compose run --rm app perl /app/bin/setup-integration-service.pl
+        ;;
+
+    stop)
+        docker-compose down --remove-orphans
         ;;
 
     mysql)
@@ -14,7 +22,7 @@ case $CMD in
         ;;
 
     *)
-        echo "usage: $0 [run|mysql]"
+        echo "usage: $0 [run|stop|mysql|setup]"
         exit 1
         ;;
 esac

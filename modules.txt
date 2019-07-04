@@ -1,4 +1,10 @@
+Crypt::JWT
+DBD::mysql
+DBI
 Data::Structure::Util
+Data::UUID
 Encode
 File::Slurp
+URI
 YAML::XS
+LWP::UserAgent

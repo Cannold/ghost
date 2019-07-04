@@ -2,6 +2,17 @@ version: '3.1'
 
 services:
 
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DB_URI: "db:mysql://root:awesomepassword@db:3306/ghost"
+      SERVICE_NAME: "Custom service"
+    links:
+      - db
+      - ghost
+
   ghost:
     image: ghost:latest
     restart: always
@@ -17,6 +28,7 @@ services:
       - ./src/content:/var/lib/ghost/content
       - ./src/config.development.json:/var/lib/ghost/config.development.json
       - ./src/config.production.json:/var/lib/ghost/config.production.json
+
   db:
     image: mysql:5.7
     restart: always
