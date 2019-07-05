@@ -9,6 +9,9 @@ services:
     environment:
       DB_URI: "db:mysql://root:awesomepassword@db:3306/ghost"
       SERVICE_NAME: "Custom service"
+    working_dir: /app
+    volumes:
+      - .:/app
     links:
       - db
       - ghost

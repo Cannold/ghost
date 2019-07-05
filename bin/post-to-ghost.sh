@@ -35,13 +35,19 @@ SIGNATURE=$(printf '%s' "${HEADER_PAYLOAD}" | openssl dgst -binary -sha256 -mac 
 TOKEN="${HEADER_PAYLOAD}.${SIGNATURE}"
 
 # Make an authenticated request to create a post
-
 URL="http://ghost:2368/ghost/api/v2/admin/posts/"
 
 RESULT=$( curl -H "Authorization: Ghost $TOKEN" \
 -H "Content-Type: application/json" \
 -d '{"posts":[{"title":"Hello world", "html":"<p>My post conent. Work in progress</p>"}]}' \
 -X POST $URL)
+
+# switch to this when figuring out why curl POST works but nothing happens
+#CONTENT=$( backup-to-ghost.pl )
+#RESULT=$( curl -H "Authorization: Ghost $TOKEN" \
+#-H "Content-Type: application/json" \
+#-d $CONTENT
+#-X POST $URL)
 
 echo
 echo $RESULT

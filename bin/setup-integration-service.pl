@@ -22,7 +22,8 @@ use URI;
 my $ug = Data::UUID->new;
 
 my $sth;
-my $dbh = connect_db();
+my $uri = URI->new($ENV{DB_URI});
+my $dbh = DBI->connect($uri->dbi_dsn, $uri->user, $uri->password, { RaiseError => 1, AutoCommit => 1 });
 
 # insert an entry for integrations
 my $integration_id = generate_id(24);
@@ -67,13 +68,6 @@ $dbh->disconnect();
 say "Done setup";
 
 exit 0;
-
-fun connect_db() {
-    my $uri = URI->new($ENV{DB_URI});
-    my $dbh = DBI->connect($uri->dbi_dsn, $uri->user, $uri->password, { RaiseError => 1, AutoCommit => 1 });
-
-    return $dbh;
-}
 
 fun generate_id($length = undef) {
     my $id = $ug->create_str();

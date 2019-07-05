@@ -5,7 +5,7 @@ shift
 
 case $CMD in
     run)
-        docker-compose up --build -d
+        docker-compose up -d
         docker-compose logs -f
         ;;
 
