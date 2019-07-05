@@ -10,5 +10,7 @@ RUN apt-get update \
 COPY modules.txt /app/
 RUN install-cpan-modules /app/modules.txt
 
+ENV PATH=/app/bin:$PATH
+
 COPY bin/ /app/bin/
 COPY data/ /app/data/

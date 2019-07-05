@@ -1,4 +1,3 @@
-Crypt::JWT
 DBD::mysql
 DBI
 Data::Structure::Util
@@ -7,4 +6,3 @@ Encode
 File::Slurp
 URI
 YAML::XS
-LWP::UserAgent
