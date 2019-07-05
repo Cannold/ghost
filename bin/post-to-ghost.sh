@@ -2,7 +2,7 @@
 
 # Admin API key goes here
 KEY=$( get-key.pl admin )
-echo $KEY
+#echo $KEY
 
 # Split the key into ID and SECRET
 TMPIFS=$IFS
@@ -23,22 +23,27 @@ base64_url_encode() {
 }
 
 # Prepare the token body
-header_base64=$(base64_url_encode "$HEADER")
-payload_base64=$(base64_url_encode "$PAYLOAD")
+HEADER_BASE64=$(base64_url_encode "$HEADER")
+PAYLOAD_BASE64=$(base64_url_encode "$PAYLOAD")
 
-header_payload="${header_base64}.${payload_base64}"
+HEADER_PAYLOAD="${HEADER_BASE64}.${PAYLOAD_BASE64}"
 
 # Create the signature
-signature=$(printf '%s' "${header_payload}" | openssl dgst -binary -sha256 -mac HMAC -macopt hexkey:$SECRET | base64_url_encode)
+SIGNATURE=$(printf '%s' "${HEADER_PAYLOAD}" | openssl dgst -binary -sha256 -mac HMAC -macopt hexkey:$SECRET | base64_url_encode)
 
 # Concat payload and signature into a valid JWT token
-TOKEN="${header_payload}.${signature}"
+TOKEN="${HEADER_PAYLOAD}.${SIGNATURE}"
 
 # Make an authenticated request to create a post
 
+URL="http://ghost:2368/ghost/api/v2/admin/posts/"
+
 RESULT=$( curl -H "Authorization: Ghost $TOKEN" \
 -H "Content-Type: application/json" \
--d '{"posts":[{"title":"Hello world"}]}' \
-"http://ghost:2368/ghost/api/v2/admin/posts/")
+-d '{"posts":[{"title":"Hello world", "html":"<p>My post conent. Work in progress</p>"}]}' \
+-X POST $URL)
+
+echo
 echo $RESULT
+echo
 echo done
