@@ -68,13 +68,9 @@ foreach my $item (@array) {
         created_at    => $created . "T00:00:00.000Z",
         title         => $item->{attributes}{title},
         html          => $content,
-        status        => "published",
+        status        => "draft",
         slug          => $item->{attributes}{slug},
     };
-
-    if ($item->{attributes}{id}) {
-        $post->{id} = $item->{attributes}{id};
-    }
 
     if ( $item->{attributes}{excerpt} ) {
         my $excerpt = decode_utf8($item->{attributes}{excerpt});
