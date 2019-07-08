@@ -60,21 +60,29 @@ foreach my $item (@array) {
     $content =~ s/^\s*|\s*$//g;
 
     my $post = {
-        #categories => defined $tag{$item->{attributes}{id}}
-                        #? join " ", @{$tag{$item->{attributes}{id}}}
-                        #: undef,
-        #assets     => $item->{assets},
-        #link       => $item->{attributes}{link},
-        #published  => $published,
-        title      => $item->{attributes}{title},
-        html       => $content,
-        status     => "published",
+        tags          => defined $item->{attributes}{categories}
+                        ? [ $item->{attributes}{categories} ]
+                        : [],
+        canonical_url => $item->{attributes}{link},
+        published_at  => $published . "T00:00:00.000Z",
+        created_at    => $created . "T00:00:00.000Z",
+        title         => $item->{attributes}{title},
+        html          => $content,
+        status        => "published",
+        slug          => $item->{attributes}{slug},
     };
+
+    if ($item->{attributes}{id}) {
+        $post->{id} = $item->{attributes}{id};
+    }
 
     if ( $item->{attributes}{excerpt} ) {
         my $excerpt = decode_utf8($item->{attributes}{excerpt});
         $excerpt =~ s/\r\n/ /gs;
         $post->{excerpt} = $excerpt;
+    }
+    else {
+        $post->{excerpt} = substr(decode_utf8($item->{attributes}{content_markup}), 0, 100);
     }
 
     push @content_ref, $post;

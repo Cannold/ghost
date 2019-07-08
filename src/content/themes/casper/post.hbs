@@ -25,6 +25,10 @@ into the {body} of the default.hbs template --}}
                     {{/primary_tag}}
                 </section>
                 <h1 class="post-full-title">{{title}}</h1>
+
+                {{#if canonical_url }}
+                <h4><a href="{{ canonical_url }}">{{ canonical_url }}</a></h4>
+                {{/if}}
             </header>
 
             {{#if feature_image}}
