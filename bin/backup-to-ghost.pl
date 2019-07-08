@@ -60,15 +60,15 @@ foreach my $item (@array) {
     $content =~ s/^\s*|\s*$//g;
 
     my $post = {
-        categories => defined $tag{$item->{attributes}{id}}
-                        ? join " ", @{$tag{$item->{attributes}{id}}}
-                        : undef,
-        assets     => $item->{assets},
-        link       => $item->{attributes}{link},
-        published  => $published,
+        #categories => defined $tag{$item->{attributes}{id}}
+                        #? join " ", @{$tag{$item->{attributes}{id}}}
+                        #: undef,
+        #assets     => $item->{assets},
+        #link       => $item->{attributes}{link},
+        #published  => $published,
         title      => $item->{attributes}{title},
-        # _blueprint => $item->{attributes},
-        content    => $content,
+        html       => $content,
+        status     => "published",
     };
 
     if ( $item->{attributes}{excerpt} ) {
@@ -80,6 +80,6 @@ foreach my $item (@array) {
     push @content_ref, $post;
 }
 
-my $encoded_content = Cpanel::JSON::XS->new->allow_blessed({posts => \@content_ref});
-print $encoded_content . "\n";
+my $encoded_content = Cpanel::JSON::XS->new->allow_blessed->encode(\@content_ref);
+print $encoded_content;
 
