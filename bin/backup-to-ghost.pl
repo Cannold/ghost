@@ -53,7 +53,7 @@ foreach my $item (@array) {
     next unless ref $item eq 'ruby/object:CanpubArticle';
 
     my $created = $item->{attributes}{created_on};
-    $created =~ s/(\d\d\d\d-\d\d-\d\d)/$1/;
+    $created =~ s/(\d{4}-\d{2}-\d{2})/$1/;
     my $published = $item->{attributes}{publish_on} || $created;
 
     my $content = decode_utf8($item->{attributes}{content_markup});

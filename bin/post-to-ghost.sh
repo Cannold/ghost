@@ -51,6 +51,6 @@ for ITEM in $( echo $CONTENT |jq -r '.[] | @base64' ); do
     -d "$PARAM" \
     -X POST $URL)
 
-    echo $RESULT
-    exit 0
+    #echo $RESULT
+    #exit 0
 done
