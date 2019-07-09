@@ -35,6 +35,7 @@ TOKEN="${HEADER_PAYLOAD}.${SIGNATURE}"
 
 # Make an authenticated request to create a post
 URL="http://$( hostname -f ):8080/ghost/api/v2/admin/posts/?source=html"
+IMAGE_URL="http://$( hostname -f ):8080/ghost/api/v2/admin/images/upload"
 
 # switch to this when figuring out why curl POST works but nothing happens
 CONTENT=$( docker-compose run --rm app perl /app/bin/backup-to-ghost.pl )
@@ -43,14 +44,34 @@ CONTENT=$( docker-compose run --rm app perl /app/bin/backup-to-ghost.pl )
 for ITEM in $( echo $CONTENT |jq -r '.[] | @base64' ); do
 
     DATA=$( echo $ITEM | base64 --decode )
-    PARAM=$( printf '{"posts":[%s]}' "$DATA" )
-    #echo "$PARAM"
 
-    RESULT=$( curl -H "Authorization: Ghost $TOKEN" \
-    -H "Content-Type: application/json" \
-    -d "$PARAM" \
-    -X POST $URL)
+    CONTENT_TYPE=$( echo ${DATA} | jq -r '.content' )
 
-    #echo $RESULT
-    #exit 0
+    if [[ ${CONTENT_TYPE} == "image" ]]; then
+        continue
+        #echo "$DATA"
+        FILE_PATH=$( echo ${DATA} | jq -r '.path' )
+        LOCAL_PATH=$PWD/data/assets/${FILE_PATH}
+        UPLOAD_PATH=/static/files/assets/${FILE_PATH}
+
+        RESULT=$( curl -H "Authorization: Ghost $TOKEN" \
+        -H "Content-Type: multipart/form-data" \
+        -F "file=@${LOCAL_PATH}" \
+        -F "ref=${UPLOAD_PATH}" \
+        -X POST $IMAGE_URL)
+        echo $RESULT
+        #exit 0
+
+    else
+        PARAM=$( printf '{"posts":[%s]}' "$DATA" )
+        #echo "$PARAM"
+
+        RESULT=$( curl -H "Authorization: Ghost $TOKEN" \
+        -H "Content-Type: application/json" \
+        -d "$PARAM" \
+        -X POST $URL 2>/dev/null)
+
+        #echo $RESULT
+        #exit 0
+    fi
 done

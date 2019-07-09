@@ -1,3 +1,4 @@
+Data::Validate::URI
 DBD::mysql
 DBI
 Data::Structure::Util
