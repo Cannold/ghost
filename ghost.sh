@@ -13,6 +13,10 @@ case $CMD in
         docker-compose run --rm app perl /app/bin/setup-integration-service.pl
         ;;
 
+    import)
+        ./bin/post-to-ghost.sh
+        ;;
+
     stop)
         docker-compose down --remove-orphans
         ;;
@@ -22,7 +26,7 @@ case $CMD in
         ;;
 
     *)
-        echo "usage: $0 [run|stop|mysql|setup]"
+        echo "usage: $0 [run|stop|mysql|setup|import]"
         exit 1
         ;;
 esac

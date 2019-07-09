@@ -15,7 +15,7 @@ use POSIX qw( strftime );
 
 # $YAML::XS::UseCode=1;
 
-my $yaml = read_file('data/backup.yml');
+my $yaml = read_file($ARGV[0]);
 my @array = Load $yaml;
 
 my %tag;
@@ -73,13 +73,15 @@ fun extract_article_info($item) {
     my $published = $item->{attributes}{publish_on} || $created;
 
     my $content = decode_utf8($item->{attributes}{content_markup});
-    $content =~ s/^\s*|\s*$//g;
+    $content =~ s/^\s*|\s*$//g; # trailing space
 
     my @matches = $content =~ m/\/static\/files\/assets\/\S+?\/(\S+)"/g;
-    # replace /static/files/assets/{id}/{image} with /content/images/{year}/{month}/{image}
+    # replace /static/files/assets/{id}/{filename} with /content/images/{id}/{filenmae}
     for my $match (@matches) {
         $content =~ s/\/static\/files\/assets\/.*?"/$asset_lookup{$match}"/g;
     }
+    # remove mimetypes img which cause weird error in display
+    $content =~ s/<img.*?mimetypes.*?\/>//g;
 
     my $post = {
         tags          => defined $item->{attributes}{categories}

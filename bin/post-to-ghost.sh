@@ -38,7 +38,7 @@ URL="http://$( hostname -f ):8080/ghost/api/v2/admin/posts/?source=html"
 IMAGE_URL="http://$( hostname -f ):8080/ghost/api/v2/admin/images/upload"
 
 # switch to this when figuring out why curl POST works but nothing happens
-CONTENT=$( docker-compose run --rm app perl /app/bin/backup-to-ghost.pl )
+CONTENT=$( docker-compose run --rm app perl /app/bin/backup-to-ghost.pl /app/data/backup.yml )
 #echo $CONTENT > /tmp/post-content
 
 for ITEM in $( echo $CONTENT |jq -r '.[] | @base64' ); do

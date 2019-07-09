@@ -6,7 +6,6 @@ use open qw(:utf8 :std);       # default open mode, `backticks`, and std{in,out,
 
 use File::Slurp;
 use YAML::XS;
-use Data::Structure::Util qw( unbless );
 use Encode qw( decode_utf8 );
 use Data::Dumper;
 

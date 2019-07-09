@@ -1,7 +1,6 @@
 Data::Validate::URI
 DBD::mysql
 DBI
-Data::Structure::Util
 Data::UUID
 Encode
 File::Slurp
