@@ -45,33 +45,15 @@ for ITEM in $( echo $CONTENT |jq -r '.[] | @base64' ); do
 
     DATA=$( echo $ITEM | base64 --decode )
 
-    CONTENT_TYPE=$( echo ${DATA} | jq -r '.content' )
+    PARAM=$( printf '{"posts":[%s]}' "$DATA" )
+    #echo "$PARAM"
+    echo $( echo "$DATA" | jq -r '.title' )
 
-    if [[ ${CONTENT_TYPE} == "image" ]]; then
-        continue
-        #echo "$DATA"
-        FILE_PATH=$( echo ${DATA} | jq -r '.path' )
-        LOCAL_PATH=$PWD/data/assets/${FILE_PATH}
-        UPLOAD_PATH=/static/files/assets/${FILE_PATH}
+    RESULT=$( curl -H "Authorization: Ghost $TOKEN" \
+    -H "Content-Type: application/json" \
+    -d "$PARAM" \
+    -X POST $URL 2>/dev/null)
 
-        RESULT=$( curl -H "Authorization: Ghost $TOKEN" \
-        -H "Content-Type: multipart/form-data" \
-        -F "file=@${LOCAL_PATH}" \
-        -F "ref=${UPLOAD_PATH}" \
-        -X POST $IMAGE_URL)
-        echo $RESULT
-        #exit 0
-
-    else
-        PARAM=$( printf '{"posts":[%s]}' "$DATA" )
-        #echo "$PARAM"
-
-        RESULT=$( curl -H "Authorization: Ghost $TOKEN" \
-        -H "Content-Type: application/json" \
-        -d "$PARAM" \
-        -X POST $URL 2>/dev/null)
-
-        #echo $RESULT
-        #exit 0
-    fi
+    #echo $RESULT
+    #exit 0
 done

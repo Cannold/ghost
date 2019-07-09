@@ -31,6 +31,7 @@ services:
       - ./src/content:/var/lib/ghost/content
       - ./src/config.development.json:/var/lib/ghost/config.development.json
       - ./src/config.production.json:/var/lib/ghost/config.production.json
+      - ./data/assets:/var/lib/ghost/content/images
 
   db:
     image: mysql:5.7

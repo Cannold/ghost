@@ -11,6 +11,7 @@ use Encode qw( decode_utf8 );
 use Data::Dumper;
 use Cpanel::JSON::XS;;
 use Data::Validate::URI qw( is_uri );
+use POSIX qw( strftime );
 
 # $YAML::XS::UseCode=1;
 
@@ -43,18 +44,21 @@ map { $types{ref $_}++ } @array;
 #}
 
 my @content_ref;
+
+# asset_lookup hash will have filename => path as key => value
+my %asset_lookup;
+for my $item (@array) {
+    next unless ref($item) eq "ruby/object:Asset";
+    my $path = "/content/images/$item->{attributes}{guid}/$item->{attributes}{filename}";
+    $asset_lookup{ $item->{attributes}{filename} } = $path;
+}
+
 for my $item (@array) {
 
     my $item_ref = ref($item);
-    next unless $item_ref =~ m/ruby\/object:(Asset|CanpubArticle)/;
+    next unless $item_ref eq "ruby/object:CanpubArticle";
 
-    my $post;
-    if ($item_ref eq "ruby/object:CanpubArticle") {
-        $post = extract_article_info($item);
-    }
-    elsif ($item_ref eq "ruby/object:Asset") {
-        $post = extract_asset_info($item);
-    }
+    my $post = extract_article_info($item);
 
     push @content_ref, $post;
 }
@@ -70,6 +74,12 @@ fun extract_article_info($item) {
 
     my $content = decode_utf8($item->{attributes}{content_markup});
     $content =~ s/^\s*|\s*$//g;
+
+    my @matches = $content =~ m/\/static\/files\/assets\/\S+?\/(\S+)"/g;
+    # replace /static/files/assets/{id}/{image} with /content/images/{year}/{month}/{image}
+    for my $match (@matches) {
+        $content =~ s/\/static\/files\/assets\/.*?"/$asset_lookup{$match}"/g;
+    }
 
     my $post = {
         tags          => defined $item->{attributes}{categories}
@@ -96,12 +106,4 @@ fun extract_article_info($item) {
     }
     return $post;
 
-}
-
-fun extract_asset_info($item) {
-    my $post = {
-        path => "$item->{attributes}{guid}/$item->{attributes}{filename}",
-        content => "image",
-    };
-    return $post;
 }
