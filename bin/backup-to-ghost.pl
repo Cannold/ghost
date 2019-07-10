@@ -68,7 +68,7 @@ print $encoded_content;
 
 fun extract_article_info($item) {
 
-    my $created = $item->{attributes}{created_on};
+    my $created = $item->{attributes}{created_on} // $item->{attributes}{created_at};
     $created =~ s/(\d{4}-\d{2}-\d{2})/$1/;
     my $published = $item->{attributes}{publish_on} || $created;
 
@@ -87,8 +87,8 @@ fun extract_article_info($item) {
         tags          => defined $item->{attributes}{categories}
                         ? [ $item->{attributes}{categories} ]
                         : [],
-        published_at  => $published . "T00:00:00.000Z",
-        created_at    => $created . "T00:00:00.000Z",
+        published_at  => $published ? $published . "T00:00:00.000Z" : undef,
+        created_at    => $created ? $created . "T00:00:00.000Z" : undef,
         title         => $item->{attributes}{title},
         html          => $content,
         status        => "draft",
