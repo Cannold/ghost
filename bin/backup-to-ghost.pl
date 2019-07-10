@@ -88,7 +88,7 @@ fun extract_article_info($item) {
                         : [],
         published_at  => $published ? $published . "T00:00:00.000Z" : undef,
         created_at    => $created ? $created . "T00:00:00.000Z" : undef,
-        title         => $item->{attributes}{title},
+        title         => decode_utf8($item->{attributes}{title}),
         html          => $content,
         status        => "draft",
         slug          => $item->{attributes}{slug},
