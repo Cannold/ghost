@@ -62,14 +62,13 @@ for my $item (@array) {
 
     push @content_ref, $post;
 }
-
 my $encoded_content = Cpanel::JSON::XS->new->allow_blessed->encode(\@content_ref);
 print $encoded_content;
 
 fun extract_article_info($item) {
 
     my $created = $item->{attributes}{created_on} // $item->{attributes}{created_at};
-    $created =~ s/(\d{4}-\d{2}-\d{2})/$1/;
+    $created =~ s/(\d{4}-\d{2}-\d{2}).*$/$1/;
     my $published = $item->{attributes}{publish_on} || $created;
 
     my $content = decode_utf8($item->{attributes}{content_markup});
