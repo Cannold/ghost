@@ -12,6 +12,7 @@ use Data::Dumper;
 use Cpanel::JSON::XS;;
 use Data::Validate::URI qw( is_uri );
 use POSIX qw( strftime );
+use Time::Piece;
 
 # $YAML::XS::UseCode=1;
 
@@ -69,7 +70,13 @@ fun extract_article_info($item) {
 
     my $created = $item->{attributes}{created_on} // $item->{attributes}{created_at};
     $created =~ s/(\d{4}-\d{2}-\d{2}).*$/$1/;
+
     my $published = $item->{attributes}{publish_on} || $created;
+    if ($published !~ m/\d{4}-\d{2}-\d{2}/) {
+        # e.g. May 01, 2019
+        my $time = Time::Piece->strptime($published, "%B %d, %Y");
+        $published = $time->strftime("%Y-%m-%d");
+    }
 
     my $content = decode_utf8($item->{attributes}{content_markup});
     $content =~ s/^\s*|\s*$//g; # trailing space
