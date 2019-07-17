@@ -46,12 +46,13 @@ map { $types{ref $_}++ } @array;
 
 my @content_ref;
 
-# asset_lookup hash will have filename => path as key => value
+# asset_lookup hash will have guid/filename => path as key => value
 my %asset_lookup;
 for my $item (@array) {
     next unless ref($item) eq "ruby/object:Asset";
     my $path = "/content/images/$item->{attributes}{guid}/$item->{attributes}{filename}";
-    $asset_lookup{ $item->{attributes}{filename} } = $path;
+    my $key = "$item->{attributes}{guid}/$item->{attributes}{filename}";
+    $asset_lookup{ $key } = $path;
 }
 
 for my $item (@array) {
@@ -81,7 +82,7 @@ fun extract_article_info($item) {
     my $content = decode_utf8($item->{attributes}{content_markup});
     $content =~ s/^\s*|\s*$//g; # trailing space
 
-    my @matches = $content =~ m/\/static\/files\/assets\/\S+?\/(\S+)"/g;
+    my @matches = $content =~ m/\/static\/files\/assets\/(.*?)"/g;
     # replace /static/files/assets/{id}/{filename} with /content/images/{id}/{filenmae}
     for my $match (@matches) {
         $content =~ s/\/static\/files\/assets\/.*?"/$asset_lookup{$match}"/g;

@@ -7,6 +7,7 @@ use warnings;
 use DBI;
 use Data::UUID;
 use Data::Dumper;
+use Function::Parameters qw(:strict);
 use URI;
 
 # instead of going to {hostname}/ghost and setting up an admin account
@@ -35,9 +36,7 @@ $sth = $dbh->prepare(qq(
 $sth->execute($integration_id, "custom", $ENV{SERVICE_NAME}, $ENV{SERVICE_NAME});
 
 # entry for content_api in api_keys table
-my $content_api_id = $ug->create_str();
-$content_api_id =~ s/\-//g;
-$content_api_id = substr($content_api_id, 0, 24);
+my $content_api_id = generate_id(24);
 
 my $content_secret = "08d0c8c76380072ed33e6b0109";
 $sth = $dbh->prepare(qq(
@@ -70,3 +69,10 @@ $dbh->disconnect();
 say "Done setup";
 
 exit 0;
+
+fun generate_id($length = undef) {
+    my $id = $ug->create_str();
+    $id =~ s/\-//g;
+
+    return ($length ? substr($id, 0, $length) : $id);
+}
