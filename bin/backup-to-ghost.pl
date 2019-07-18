@@ -58,7 +58,7 @@ for my $item (@array) {
 for my $item (@array) {
 
     my $item_ref = ref($item);
-    next unless $item_ref eq "ruby/object:CanpubArticle";
+    next unless $item_ref =~ /^ruby\/object\:(CanpubArticle|Page)$/;
 
     my $post = extract_article_info($item);
 
@@ -111,7 +111,8 @@ fun extract_article_info($item) {
         $post->{excerpt} = $excerpt;
     }
     else {
-        $post->{excerpt} = substr(decode_utf8($item->{attributes}{content}), 0, 100);
+        my @splits = split " ", $item->{attributes}{content};
+        $post->{excerpt} = join " ", @splits[0 .. 99];
     }
     return $post;
 

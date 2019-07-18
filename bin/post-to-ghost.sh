@@ -35,7 +35,6 @@ TOKEN="${HEADER_PAYLOAD}.${SIGNATURE}"
 
 # Make an authenticated request to create a post
 URL="http://$( hostname -f ):8080/ghost/api/v2/admin/posts/?source=html"
-IMAGE_URL="http://$( hostname -f ):8080/ghost/api/v2/admin/images/upload"
 
 # switch to this when figuring out why curl POST works but nothing happens
 CONTENT=$( docker-compose run --rm app perl /app/bin/backup-to-ghost.pl /app/data/backup.yml )
@@ -45,15 +44,14 @@ for ITEM in $( echo $CONTENT |jq -r '.[] | @base64' ); do
 
     DATA=$( echo $ITEM | base64 --decode )
 
-    PARAM=$( printf '{"posts":[%s]}' "$DATA" )
-    #echo "$PARAM"
     echo $( echo "$DATA" | jq -r '.title' )
 
+    #echo "$PARAM"
+    PARAM=$( printf '{"posts":[%s]}' "$DATA" )
     RESULT=$( curl -H "Authorization: Ghost $TOKEN" \
     -H "Content-Type: application/json" \
     -d "$PARAM" \
     -X POST $URL 2>/dev/null)
-
     #echo $RESULT
     #exit 0
 done

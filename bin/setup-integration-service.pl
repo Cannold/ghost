@@ -38,7 +38,7 @@ $sth->execute($integration_id, "custom", $ENV{SERVICE_NAME}, $ENV{SERVICE_NAME})
 # entry for content_api in api_keys table
 my $content_api_id = generate_id(24);
 
-my $content_secret = "08d0c8c76380072ed33e6b0109";
+my $content_secret = $ENV{CONTENT_SECRET};
 $sth = $dbh->prepare(qq(
     INSERT INTO api_keys
         (id, type, integration_id, secret, created_at, created_by)
@@ -55,8 +55,8 @@ $sth->execute("Admin Integration");
 my $ref = $sth->fetchall_arrayref({});
 my $role_id = $ref->[0]->{id};
 
-my $admin_api_id = "5d1e94e87708cd00017fee06";
-my $admin_secret = "ec334cba073c3a1f0e2689ca5063beeee1bab3bded2901878edf4a43ffc5ff9d";;
+my $admin_api_id = $ENV{ADMIN_API_ID};
+my $admin_secret = $ENV{ADMIN_SECRET};
 $sth = $dbh->prepare(qq(
     INSERT INTO api_keys
         (id, type, secret, role_id, integration_id, created_at, created_by)
