@@ -1,7 +1,20 @@
 # ghost
 
-To bootup the environment `./ghost.sh run`
+## How to run the stack
+1. `./ghost.sh run` to initiate docker compose stack
+2. `./ghost.sh setup` to setup secret and ID for both Admin and Content API
 
-After everything is up, you need to run `./ghost.sh setup` to insert some sample keys for Admin API and Content API
+Frontend access is at port http://localhost:8080/
 
-Access database `./ghost.sh mysql`
+To access admin side, you can go to http://localhost:8080/ghost and follow the instruction. This will be very helpful to see all contents that are posted when we populates data.
+
+## Populating data
+`./bin/post-to-ghost.sh`
+
+This script will make a POST request via Admin API for each post in `data/backup.yml`. When the content is sent to the server successfully, they can be viewed it in its MySQL database. Ghost doesn't store these content locally. 
+
+Note: at the moment, all posts and pages that are imported from `bin/backup.yml` will be have their published status as  **draft**. 
+
+## Access database
+`./ghost.sh mysql`
+
