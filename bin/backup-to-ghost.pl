@@ -43,7 +43,8 @@ my %citation_lookup;
 for my $item (@array) {
 
     my $item_ref = ref($item);
-    if ($item_ref =~ /^ruby\/object\:(CanpubArticle|Page)$/) {
+    if ($item_ref =~ /^ruby\/object\:(CanpubArticle|Page|EvtEvent)$/) {
+        $item->{is_event} = ($1 eq "EvtEvent");
         my $post = extract_article_info($item);
         push @content_ref, $post;
     }
@@ -64,6 +65,10 @@ for my $item (@array) {
 # add tags for each posts
 for my $item (@content_ref) {
     my $id = delete $item->{id};
+
+    # EvtEvent doesn't need citation and multiple tags
+    next if defined $item->{tags} && $item->{tags}[0] eq "event";
+
     $item->{tags} = $tag_lookup{ $id } if exists $tag_lookup{ $id };
     if (exists $citation_lookup{ $id }) {
         $item->{html} .= q(
@@ -81,6 +86,8 @@ my $encoded_content = Cpanel::JSON::XS->new->allow_blessed->encode(\@content_ref
 print $encoded_content;
 
 fun extract_article_info($item) {
+
+    my $is_event = delete $item->{is_event};
 
     my $created = $item->{attributes}{created_on} // $item->{attributes}{created_at};
     $created =~ s/(\d{4}-\d{2}-\d{2}).*$/$1/;
@@ -104,9 +111,6 @@ fun extract_article_info($item) {
     $content =~ s/<img.*?mimetypes.*?\/>//g;
 
     my $post = {
-        #tags          => defined $item->{attributes}{categories}
-        #                ? [ $item->{attributes}{categories} ]
-        #                : [],
         id            => $item->{attributes}{id},
         published_at  => $published ? $published . "T00:00:00.000Z" : undef,
         created_at    => $created ? $created . "T00:00:00.000Z" : undef,
@@ -119,6 +123,12 @@ fun extract_article_info($item) {
     if ($item->{attributes}{link} && is_uri($item->{attributes}{link})) {
         $post->{html} .= qq( <a href=\"$item->{attributes}{link}\">$item->{attributes}{link}</a> );
     }
+
+    if ($is_event) {
+        # manually make tags for EvtEvent object
+        $post->{tags} = ["event"];
+    }
+
     if ( $item->{attributes}{excerpt} ) {
         my $excerpt = decode_utf8($item->{attributes}{excerpt});
         $excerpt =~ s/\r\n/ /gs;
@@ -137,7 +147,8 @@ fun extract_tag_info($item) {
     my $key = $item->{attributes}{taggable_id};
 
     # skip these tags
-    next if $val =~ m/^(books|sidebar)$/;
+    # event tag will be added to EvtEvent object directly
+    next if $val =~ m/^(books|sidebar|event)$/;
     $val = "in-the-media" if $val eq "in-the-media1";
 
     if (exists $tag_lookup{ $key }) {
