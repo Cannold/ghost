@@ -40,6 +40,8 @@ my %tag_lookup;
 # tag lookup will have key-value as <post ID> => <array of tags>
 my %citation_lookup;
 
+my $event_tag = "Events";
+
 for my $item (@array) {
 
     my $item_ref = ref($item);
@@ -67,7 +69,7 @@ for my $item (@content_ref) {
     my $id = delete $item->{id};
 
     # EvtEvent doesn't need citation and multiple tags
-    next if defined $item->{tags} && $item->{tags}[0] eq "event";
+    next if defined $item->{tags} && $item->{tags}[0] eq $event_tag;
 
     $item->{tags} = $tag_lookup{ $id } if exists $tag_lookup{ $id };
     if (exists $citation_lookup{ $id }) {
@@ -126,7 +128,7 @@ fun extract_article_info($item) {
 
     if ($is_event) {
         # manually make tags for EvtEvent object
-        $post->{tags} = ["event"];
+        $post->{tags} = [ $event_tag ];
     }
 
     if ( $item->{attributes}{excerpt} ) {
@@ -149,7 +151,14 @@ fun extract_tag_info($item) {
     # skip these tags
     # event tag will be added to EvtEvent object directly
     next if $val =~ m/^(books|sidebar|event)$/;
-    $val = "in-the-media" if $val eq "in-the-media1";
+
+    my %rename_hash = (
+        "in-the-media"  => "In the media",
+        "in-the-media1" => "In the media",
+        "research"      => "Research",
+        "writings"      => "Writings",
+    );
+    $val = $rename_hash{ $val };
 
     if (exists $tag_lookup{ $key }) {
         push @{ $tag_lookup{ $key } }, $val;
