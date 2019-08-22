@@ -46,24 +46,38 @@ map { $types{ref $_}++ } @array;
 
 my @content_ref;
 
-# asset_lookup hash will have guid/filename => path as key => value
+# asset_lookup hash will have key-value as <guid/filename> => <path>
 my %asset_lookup;
-for my $item (@array) {
-    next unless ref($item) eq "ruby/object:Asset";
-    my $path = "/content/images/$item->{attributes}{guid}/$item->{attributes}{filename}";
-    my $key = "$item->{attributes}{guid}/$item->{attributes}{filename}";
-    $asset_lookup{ $key } = $path;
-}
+
+# tag lookup will have key-value as <post ID> => <array of tags>
+my %tag_lookup;
 
 for my $item (@array) {
 
     my $item_ref = ref($item);
-    next unless $item_ref =~ /^ruby\/object\:(CanpubArticle|Page)$/;
+    if ($item_ref =~ /^ruby\/object\:(CanpubArticle|Page)$/) {
+        my $post = extract_article_info($item);
+        push @content_ref, $post;
+    }
+    elsif ($item_ref eq "ruby/object:Asset") {
+        my $path = "/content/images/$item->{attributes}{guid}/$item->{attributes}{filename}";
+        my $key = "$item->{attributes}{guid}/$item->{attributes}{filename}";
+        $asset_lookup{ $key } = $path;
 
-    my $post = extract_article_info($item);
-
-    push @content_ref, $post;
+    }
+    elsif ($item_ref eq "ruby/object:Tag") {
+        extract_tag_info($item);
+    }
 }
+
+# add tags for each posts
+for my $item (@content_ref) {
+    my $id = delete $item->{id};
+    $item->{tags} = $tag_lookup{ $id } if exists $tag_lookup{ $id };
+}
+
+
+# encoded and returned
 my $encoded_content = Cpanel::JSON::XS->new->allow_blessed->encode(\@content_ref);
 print $encoded_content;
 
@@ -91,9 +105,10 @@ fun extract_article_info($item) {
     $content =~ s/<img.*?mimetypes.*?\/>//g;
 
     my $post = {
-        tags          => defined $item->{attributes}{categories}
-                        ? [ $item->{attributes}{categories} ]
-                        : [],
+        #tags          => defined $item->{attributes}{categories}
+        #                ? [ $item->{attributes}{categories} ]
+        #                : [],
+        id            => $item->{attributes}{id},
         published_at  => $published ? $published . "T00:00:00.000Z" : undef,
         created_at    => $created ? $created . "T00:00:00.000Z" : undef,
         title         => decode_utf8($item->{attributes}{title}),
@@ -116,4 +131,17 @@ fun extract_article_info($item) {
     }
     return $post;
 
+}
+
+fun extract_tag_info($item) {
+    my $val = $item->{attributes}{slug};
+    my $key = $item->{attributes}{taggable_id};
+
+    next if $val =~ m/^(books|sidebar)$/;
+    if (exists $tag_lookup{ $key }) {
+        push @{ $tag_lookup{ $key } }, $val;
+    }
+    else {
+        $tag_lookup{ $key } = [ $val ];
+    }
 }
