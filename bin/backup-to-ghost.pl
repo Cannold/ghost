@@ -19,21 +19,6 @@ use Time::Piece;
 my $yaml = read_file($ARGV[0]);
 my @array = Load $yaml;
 
-my %tag;
-foreach my $item (@array) {
-    next unless
-        ref $item eq 'ruby/object:Tag'
-        && $item->{attributes}{taggable_type} eq 'CanpubArticle'
-        && $item->{attributes}{phrase} ne 'sidebar'
-        && $item->{attributes}{slug} ne 'in-the-media1';
-
-    push @{$tag{$item->{attributes}{taggable_id}}},
-         $item->{attributes}{slug};
-}
-
-my %types;
-map { $types{ref $_}++ } @array;
-
 # posts is an array, so we can prepare everythin
 # and dump it in the array and make one big POST
 #{
@@ -151,7 +136,10 @@ fun extract_tag_info($item) {
     my $val = $item->{attributes}{slug};
     my $key = $item->{attributes}{taggable_id};
 
+    # skip these tags
     next if $val =~ m/^(books|sidebar)$/;
+    $val = "in-the-media" if $val eq "in-the-media1";
+
     if (exists $tag_lookup{ $key }) {
         push @{ $tag_lookup{ $key } }, $val;
     }
