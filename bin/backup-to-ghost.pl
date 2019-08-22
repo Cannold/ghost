@@ -132,7 +132,7 @@ fun extract_article_info($item) {
     };
 
     if ($item->{attributes}{link} && is_uri($item->{attributes}{link})) {
-        $post->{canonical_url} = $item->{attributes}{link};
+        $post->{html} .= qq( <a href=\"$item->{attributes}{link}\">$item->{attributes}{link}</a> );
     }
     if ( $item->{attributes}{excerpt} ) {
         my $excerpt = decode_utf8($item->{attributes}{excerpt});
