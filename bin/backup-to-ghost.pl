@@ -52,6 +52,9 @@ my %asset_lookup;
 # tag lookup will have key-value as <post ID> => <array of tags>
 my %tag_lookup;
 
+# tag lookup will have key-value as <post ID> => <array of tags>
+my %citation_lookup;
+
 for my $item (@array) {
 
     my $item_ref = ref($item);
@@ -68,12 +71,23 @@ for my $item (@array) {
     elsif ($item_ref eq "ruby/object:Tag") {
         extract_tag_info($item);
     }
+    elsif ($item_ref eq "ruby/object:CanpubCitation") {
+        extract_publication_info($item);
+    }
 }
 
 # add tags for each posts
 for my $item (@content_ref) {
     my $id = delete $item->{id};
     $item->{tags} = $tag_lookup{ $id } if exists $tag_lookup{ $id };
+    if (exists $citation_lookup{ $id }) {
+        $item->{html} .= q(
+            <div class="citation">
+                <h4>Publication history</h4>
+            )
+            . join(" ", @{$citation_lookup{ $id }})
+            . q( </div> );
+    }
 }
 
 
@@ -143,5 +157,24 @@ fun extract_tag_info($item) {
     }
     else {
         $tag_lookup{ $key } = [ $val ];
+    }
+}
+
+fun extract_publication_info($item) {
+    my $key = $item->{attributes}{article_id};
+    my $val = qq(
+        <blockquote>
+            $item->{attributes}{headline}
+            <em>$item->{attributes}{publication}</em>
+            <br>$item->{attributes}{date}<br>
+            <a href=\"$item->{attributes}{link}\">$item->{attributes}{link}</a>
+        </blockquote>
+    );
+
+    if (exists $citation_lookup{ $key }) {
+        push @{ $citation_lookup{ $key } }, $val;
+    }
+    else {
+        $citation_lookup{ $key } = [ $val ];
     }
 }
