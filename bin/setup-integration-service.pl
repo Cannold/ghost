@@ -6,7 +6,6 @@ use warnings;
 
 use DBI;
 use Data::UUID;
-use Data::Dumper;
 use Function::Parameters qw(:strict);
 use URI;
 

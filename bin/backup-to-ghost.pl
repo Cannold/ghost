@@ -8,9 +8,7 @@ use Function::Parameters qw( :strict );
 use File::Slurp;
 use YAML::XS;
 use Encode qw( decode_utf8 );
-use Data::Dumper;
 use Cpanel::JSON::XS;;
-use Data::Validate::URI qw( is_uri );
 use POSIX qw( strftime );
 use Time::Piece;
 
@@ -122,7 +120,7 @@ fun extract_article_info($item) {
         slug          => $item->{attributes}{slug},
     };
 
-    if ($item->{attributes}{link} && is_uri($item->{attributes}{link})) {
+    if ($item->{attributes}{link}) {
         $post->{html} .= qq( <a href=\"$item->{attributes}{link}\">$item->{attributes}{link}</a> );
     }
 

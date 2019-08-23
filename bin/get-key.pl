@@ -6,7 +6,6 @@ use warnings;
 
 use URI;
 use DBI;
-use Data::Dumper;
 
 my $sth;
 my $uri = URI->new($ENV{DB_URI});
@@ -21,7 +20,6 @@ $sth = $dbh->prepare(qq(
 ));
 $sth->execute($ENV{SERVICE_NAME});
 my $key_ref = $sth->fetchall_hashref("api_type");
-#print Dumper($key_ref);
 print "$key_ref->{$target}{api_id}:$key_ref->{$target}{secret}";
 
 $dbh->disconnect();
