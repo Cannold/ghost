@@ -36,10 +36,9 @@ TOKEN="${HEADER_PAYLOAD}.${SIGNATURE}"
 # Make an authenticated request to create a post
 URL="http://$( hostname -f ):8080/ghost/api/v2/admin/posts/?source=html"
 
-# switch to this when figuring out why curl POST works but nothing happens
 CONTENT=$( docker-compose run --rm app perl /app/bin/backup-to-ghost.pl /app/data/backup.yml )
-#echo $CONTENT > /tmp/post-content
 
+ERROR_ITEMS=()
 for ITEM in $( echo $CONTENT |jq -r '.[] | @base64' ); do
 
     DATA=$( echo $ITEM | base64 --decode )
@@ -48,10 +47,24 @@ for ITEM in $( echo $CONTENT |jq -r '.[] | @base64' ); do
 
     #echo "$PARAM"
     PARAM=$( printf '{"posts":[%s]}' "$DATA" )
-    RESULT=$( curl -H "Authorization: Ghost $TOKEN" \
+    RESULT=$( curl \
+    -o /dev/null -s -w "%{http_code}\n" \
+    -H "Authorization: Ghost $TOKEN" \
     -H "Content-Type: application/json" \
     -d "$PARAM" \
-    -X POST $URL 2>/dev/null)
+    -X POST $URL )
     #echo $RESULT
     #exit 0
+
+    if [[ $RESULT -ne 201 ]]; then
+        ERROR_ITEMS+=("$ITEM")
+    fi
 done
+
+if [[ ${#ERROR_ITEMS[@]} -gt 0 ]]; then
+    echo "Error in uploading below post: "
+
+    for ITEM in "${ERROR_ITEMS[@]}"; do
+        echo $ITEM
+    done
+fi
