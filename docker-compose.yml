@@ -12,6 +12,9 @@ services:
       ADMIN_API_ID: "5d1e94e87708cd00017fee06"
       ADMIN_SECRET: "ec334cba073c3a1f0e2689ca5063beeee1bab3bded2901878edf4a43ffc5ff9d"
       CONTENT_SECRET: "08d0c8c76380072ed33e6b0109"
+      LOGIN_EMAIL: "test01@mail.com"
+      # password = long_pass_01
+      LOGIN_PASSWORD: '$$2a$$10$$FV87Su881bCz.GPWVYni5.HXqca5A9LHp3qLnKA3Mg.mkjs2NNCyi'
     working_dir: /app
     volumes:
       - .:/app

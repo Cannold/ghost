@@ -6,7 +6,9 @@
 
 Frontend access is at port http://localhost:8080/
 
-To access admin side, you can go to http://localhost:8080/ghost and follow the instruction. This will be very helpful to see all contents that are posted when we populates data.
+To access admin side, you can go to http://localhost:8080/ghost with following login details
+- Email: test01@mail.com
+- Password: long_pass_01
 
 ## Populating data
 `./bin/post-to-ghost.sh`
