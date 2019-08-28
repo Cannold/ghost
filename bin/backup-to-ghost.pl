@@ -43,9 +43,12 @@ my $event_tag = "Events";
 for my $item (@array) {
 
     my $item_ref = ref($item);
-    if ($item_ref =~ /^ruby\/object\:(CanpubArticle|Page|EvtEvent)$/) {
-        $item->{is_event} = ($1 eq "EvtEvent");
+    if ($item_ref =~ /^ruby\/object\:(CanpubArticle|Page)$/) {
         my $post = extract_article_info($item);
+        push @content_ref, $post;
+    }
+    elsif ($item_ref eq "ruby/object:EvtEvent") {
+        my $post = extract_event_info($item);
         push @content_ref, $post;
     }
     elsif ($item_ref eq "ruby/object:Asset") {
@@ -87,8 +90,6 @@ print $encoded_content;
 
 fun extract_article_info($item) {
 
-    my $is_event = delete $item->{is_event};
-
     my $created = $item->{attributes}{created_on} // $item->{attributes}{created_at};
     $created =~ s/(\d{4}-\d{2}-\d{2}).*$/$1/;
 
@@ -124,11 +125,6 @@ fun extract_article_info($item) {
         $post->{html} .= qq( <a href=\"$item->{attributes}{link}\">$item->{attributes}{link}</a> );
     }
 
-    if ($is_event) {
-        # manually make tags for EvtEvent object
-        $post->{tags} = [ $event_tag ];
-    }
-
     if ( $item->{attributes}{excerpt} ) {
         my $excerpt = decode_utf8($item->{attributes}{excerpt});
         $excerpt =~ s/\r\n/ /gs;
@@ -140,6 +136,55 @@ fun extract_article_info($item) {
     }
     return $post;
 
+}
+
+fun extract_event_info($item) {
+    # Event has similar info as Page/Post
+    # it only has different tag and title format
+    my $post = extract_article_info($item);
+    $post->{tags} = [ $event_tag ];
+
+    # event has start date - end date presenting in three forms:
+    # - in specifc timetable (2016-11-21 12:50:00 - 2016-11-21 13:50:00 => 12:50pm - 1:50pm, 21 Nov 2016)
+    # - full day (2016-10-20 00:00:00 - 2016-10-20 00:00:00 => 04 Oct 2016)
+    # - multiple day (2016-09-20 00:00:00 - 2016-09-22 00:00:00 => 20 Sep 2016 - 22 Sep 2016)
+    # - multiple day with specific time table (2016-09-20 14:00:00 - 2016-09-22 17:00:00 => 20 Sep 2016 14:00 - 22 Sep 2016 17:00)
+
+    my $regex = qr/^(\d{4}-\d{2}-\d{2})\s(\d{2}:\d{2})/;
+    my ($start_date, $start_time) = $item->{attributes}{start_date} =~ m/$regex/;
+    my ($end_date, $end_time) = $item->{attributes}{end_date} // $item->{attributes}{start_date} =~ m/$regex/;
+
+    my @dates = $start_date eq $end_date ? ( $start_date ) : ( $start_date, $end_date );
+    my @times = $start_time eq $end_time ? ( $start_time ) : ( $start_time, $end_time );
+
+    my @format_dates;
+    for my $item (@dates) {
+        my $date = Time::Piece->strptime($item, "%Y-%m-%d");
+        push @format_dates, $date->strftime("%d %b %Y");
+    }
+
+    my @format_times;
+    for my $item (@times) {
+        my $time = Time::Piece->strptime($item, "%H:%M:%S");
+        push @format_times, $time->strftime("%I:%M %p");
+    }
+
+    my $title;
+
+    if (@format_dates == 2 && @format_times == 2) {
+        $title = "$format_dates[0] $format_times[0] - $format_dates[1] $format_times[1]: ";
+    }
+    elsif (@format_dates == 2 && @format_times == 1) {
+        $title = join(" - ", @format_dates) . ": ";
+    }
+    elsif (@format_dates == 1 && @format_times == 2) {
+        $title = join(" - ", @format_times) . ", $format_dates[0]: ";
+    }
+    elsif (@format_dates == 1 && @format_times == 1) {
+        $title = "$format_dates[0]: ";
+    }
+    $post->{title} = $title . $post->{title};
+    return $post;
 }
 
 fun extract_tag_info($item) {
