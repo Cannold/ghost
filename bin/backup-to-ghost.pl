@@ -43,7 +43,7 @@ my $event_tag = "Events";
 for my $item (@array) {
 
     my $item_ref = ref($item);
-    if ($item_ref =~ /^ruby\/object\:(CanpubArticle|Page)$/) {
+    if ($item_ref eq "ruby/object:CanpubArticle") {
         my $post = extract_article_info($item);
         push @content_ref, $post;
     }
