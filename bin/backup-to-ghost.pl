@@ -151,8 +151,11 @@ fun extract_event_info($item) {
     # - multiple day with specific time table (2016-09-20 14:00:00 - 2016-09-22 17:00:00 => 20 Sep 2016 14:00 - 22 Sep 2016 17:00)
 
     my $regex = qr/^(\d{4}-\d{2}-\d{2})\s(\d{2}:\d{2})/;
-    my ($start_date, $start_time) = $item->{attributes}{start_date} =~ m/$regex/;
-    my ($end_date, $end_time) = $item->{attributes}{end_date} // $item->{attributes}{start_date} =~ m/$regex/;
+    my $start = $item->{attributes}{start_date};
+    my $end = $item->{attributes}{end_date} // $item->{attributes}{start_date};
+
+    my ($start_date, $start_time) = $start =~ m/$regex/;
+    my ($end_date, $end_time) = $end =~ m/$regex/;
 
     my @dates = $start_date eq $end_date ? ( $start_date ) : ( $start_date, $end_date );
     my @times = $start_time eq $end_time ? ( $start_time ) : ( $start_time, $end_time );
