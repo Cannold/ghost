@@ -20,7 +20,7 @@ services:
       - .:/app
     links:
       - db
-      - ghost
+      #- ghost
 
   ghost:
     image: ghost:latest
