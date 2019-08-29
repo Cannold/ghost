@@ -28,6 +28,7 @@ my @array = Load $yaml;
 #}
 
 my @content_ref;
+my @event_ref;
 
 # asset_lookup hash will have key-value as <guid/filename> => <path>
 my %asset_lookup;
@@ -38,8 +39,6 @@ my %tag_lookup;
 # tag lookup will have key-value as <post ID> => <array of tags>
 my %citation_lookup;
 
-my $event_tag = "Events";
-
 for my $item (@array) {
 
     my $item_ref = ref($item);
@@ -49,7 +48,7 @@ for my $item (@array) {
     }
     elsif ($item_ref eq "ruby/object:EvtEvent") {
         my $post = extract_event_info($item);
-        push @content_ref, $post;
+        push @event_ref, $post;
     }
     elsif ($item_ref eq "ruby/object:Asset") {
         my $path = "/content/images/$item->{attributes}{guid}/$item->{attributes}{filename}";
@@ -69,9 +68,6 @@ for my $item (@array) {
 for my $item (@content_ref) {
     my $id = delete $item->{id};
 
-    # EvtEvent doesn't need citation and multiple tags
-    next if defined $item->{tags} && $item->{tags}[0] eq $event_tag;
-
     $item->{tags} = $tag_lookup{ $id } if exists $tag_lookup{ $id };
     if (exists $citation_lookup{ $id }) {
         $item->{html} .= q(
@@ -82,7 +78,8 @@ for my $item (@content_ref) {
             . q( </div> );
     }
 }
-
+# merge event into content
+push @content_ref, @event_ref;
 
 # encoded and returned
 my $encoded_content = Cpanel::JSON::XS->new->allow_blessed->encode(\@content_ref);
@@ -142,6 +139,8 @@ fun extract_event_info($item) {
     # Event has similar info as Page/Post
     # it only has different tag and title format
     my $post = extract_article_info($item);
+
+    my $event_tag = "Events";
     $post->{tags} = [ $event_tag ];
 
     # event has start date - end date presenting in three forms:
