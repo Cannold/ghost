@@ -57,10 +57,12 @@ for my $item (@array) {
 
     }
     elsif ($item_ref eq "ruby/object:Tag") {
-        extract_tag_info($item);
+        my $key = $item->{attributes}{taggable_id};
+        push @{ $tag_lookup{ $key } }, extract_tag_info($item);
     }
     elsif ($item_ref eq "ruby/object:CanpubCitation") {
-        extract_publication_info($item);
+        my $key = $item->{attributes}{article_id};
+        push @{ $citation_lookup{ $key } }, extract_publication_info($item);
     }
 }
 
@@ -204,13 +206,7 @@ fun extract_tag_info($item) {
         "writings"      => "Writings",
     );
     $val = $rename_hash{ $val };
-
-    if (exists $tag_lookup{ $key }) {
-        push @{ $tag_lookup{ $key } }, $val;
-    }
-    else {
-        $tag_lookup{ $key } = [ $val ];
-    }
+    return $val;
 }
 
 fun extract_publication_info($item) {
@@ -223,11 +219,5 @@ fun extract_publication_info($item) {
             <a href=\"$item->{attributes}{link}\">$item->{attributes}{link}</a>
         </blockquote>
     );
-
-    if (exists $citation_lookup{ $key }) {
-        push @{ $citation_lookup{ $key } }, $val;
-    }
-    else {
-        $citation_lookup{ $key } = [ $val ];
-    }
+    return $val;
 }
