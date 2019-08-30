@@ -1,4 +1,8 @@
-Data::Structure::Util
+DBD::mysql
+DBI
+Data::UUID
 Encode
 File::Slurp
+Time::Piece
+URI
 YAML::XS

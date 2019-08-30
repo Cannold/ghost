@@ -25,6 +25,7 @@
   },
   "process": "systemd",
   "paths": {
-    "contentPath": "/var/lib/ghost/content"
+    "contentPath": "/var/lib/ghost/content",
+    "images": "/var/lib/ghost/content/themes/casper/assets"
   }
 }
