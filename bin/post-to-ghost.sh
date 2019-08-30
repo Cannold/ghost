@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Admin API key goes here
-KEY=$( docker-compose run --rm app perl /app/bin/get-key.pl admin 2>/dev/null )
+#KEY=$( docker-compose run --rm app perl /app/bin/get-key.pl admin 2>/dev/null )
+KEY="5d68ca8ae6f5f70038f2d34d:62353045408222ea9a23fd24824e4715af21d059b8431d95e37e5145ab810af6"
 
 # Split the key into ID and SECRET
 TMPIFS=$IFS
@@ -10,9 +11,9 @@ IFS=$TMPIFS
 
 # Prepare header and payload
 NOW=$(date +'%s')
-FIVE_MINS=$(($NOW + 300))
+THIRTY_MINS=$(($NOW + 30 * 60))
 HEADER="{\"alg\": \"HS256\",\"typ\": \"JWT\", \"kid\": \"$ID\"}"
-PAYLOAD="{\"iat\":$NOW,\"exp\":$FIVE_MINS,\"aud\": \"/v2/admin/\"}"
+PAYLOAD="{\"iat\":$NOW,\"exp\":$THIRTY_MINS,\"aud\": \"/v2/admin/\"}"
 
 # Helper function for perfoming base64 URL encoding
 base64_url_encode() {
@@ -34,37 +35,27 @@ SIGNATURE=$(printf '%s' "${HEADER_PAYLOAD}" | openssl dgst -binary -sha256 -mac 
 TOKEN="${HEADER_PAYLOAD}.${SIGNATURE}"
 
 # Make an authenticated request to create a post
-URL="http://$( hostname -f ):8080/ghost/api/v2/admin/posts/?source=html"
+#URL="http://$( hostname -f ):8080/ghost/api/v2/admin/posts/?source=html"
+URL="https://lesliecannold.ghost.io/ghost/api/v2/admin/posts/?source=html"
 
 CONTENT=$( docker-compose run --rm app perl /app/bin/backup-to-ghost.pl /app/data/backup.yml )
 
-ERROR_ITEMS=()
 for ITEM in $( echo $CONTENT |jq -r '.[] | @base64' ); do
 
     DATA=$( echo $ITEM | base64 --decode )
 
-    echo $( echo "$DATA" | jq -r '.title' )
+    TITLE=$( echo "$DATA" | jq -r '.title' )
 
-    #echo "$PARAM"
+    echo ${TITLE}
+
     PARAM=$( printf '{"posts":[%s]}' "$DATA" )
-    RESULT=$( curl \
-    -o /dev/null -s -w "%{http_code}\n" \
-    -H "Authorization: Ghost $TOKEN" \
-    -H "Content-Type: application/json" \
-    -d "$PARAM" \
-    -X POST $URL )
-    #echo $RESULT
-    #exit 0
 
-    if [[ $RESULT -ne 201 ]]; then
-        ERROR_ITEMS+=("$ITEM")
-    fi
+    curl \
+        -o /dev/null \
+        -s -w "%{http_code}\n" \
+        -H "Authorization: Ghost $TOKEN" \
+        -H "Content-Type: application/json" \
+        -d "$PARAM" \
+        -X POST $URL
+
 done
-
-if [[ ${#ERROR_ITEMS[@]} -gt 0 ]]; then
-    echo "Error in uploading below post: "
-
-    for ITEM in "${ERROR_ITEMS[@]}"; do
-        echo $ITEM
-    done
-fi
