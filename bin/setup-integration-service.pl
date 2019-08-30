@@ -104,7 +104,7 @@ fun setup_admin_login($dbh) {
         VALUES
             (?, ?, ?)
     ));
-    $sth->execute(generate_id(24), $blog_owner_id, $user_id);
+    $sth->execute(lc generate_id(24), $blog_owner_id, $user_id);
 }
 
 fun generate_id($length = undef) {

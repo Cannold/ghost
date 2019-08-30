@@ -39,9 +39,19 @@ my %tag_lookup;
 # tag lookup will have key-value as <post ID> => <array of tags>
 my %citation_lookup;
 
+# handle Asset separately
+for my $item (@array) {
+    next if ref($item) ne "ruby/object:Asset";
+    my $path = "/content/images/$item->{attributes}{guid}/$item->{attributes}{filename}";
+    my $key = "$item->{attributes}{guid}/$item->{attributes}{filename}";
+    $asset_lookup{ $key } = $path;
+}
+
 for my $item (@array) {
 
     my $item_ref = ref($item);
+    next if $item_ref eq "ruby/object:Asset";
+
     if ($item_ref eq "ruby/object:CanpubArticle") {
         my $post = extract_article_info($item);
         push @content_ref, $post;
@@ -49,12 +59,6 @@ for my $item (@array) {
     elsif ($item_ref eq "ruby/object:EvtEvent") {
         my $post = extract_event_info($item);
         push @event_ref, $post;
-    }
-    elsif ($item_ref eq "ruby/object:Asset") {
-        my $path = "/content/images/$item->{attributes}{guid}/$item->{attributes}{filename}";
-        my $key = "$item->{attributes}{guid}/$item->{attributes}{filename}";
-        $asset_lookup{ $key } = $path;
-
     }
     elsif ($item_ref eq "ruby/object:Tag") {
         my $key = $item->{attributes}{taggable_id};
@@ -193,7 +197,6 @@ fun extract_event_info($item) {
 
 fun extract_tag_info($item) {
     my $val = $item->{attributes}{slug};
-    my $key = $item->{attributes}{taggable_id};
 
     # skip these tags
     # event tag will be added to EvtEvent object directly
@@ -210,7 +213,6 @@ fun extract_tag_info($item) {
 }
 
 fun extract_publication_info($item) {
-    my $key = $item->{attributes}{article_id};
     my $val = qq(
         <blockquote>
             $item->{attributes}{headline}
