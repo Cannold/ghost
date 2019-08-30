@@ -1,5 +1,7 @@
 # ghost
 
+Prod URL: https://lesliecannold.ghost.io
+
 ## How to run the stack
 1. `./ghost.sh run` to initiate docker compose stack
 2. `./ghost.sh setup` to setup secret and ID for both Admin and Content API
